@@ -45,7 +45,8 @@ MBTA_NODE.shp: spatial dataset of the MBTA subway station information, including
   - saved in DS340H_Kang_Ashley/Original Datasets/mbta_rapid_transit.zip as MBTA_NODE.shp
 
 above_weather.csv: weather data for the municipalies above the Charles River
-  - above_weather.csv saved in DS340H_Kang_Ashley/Original Datasets/ as above_weather.csv
+  - saved in DS340H_Kang_Ashley/Original Datasets/ as above_weather.csv
+
 below_weather.csv: weather data for the municipalities below the Charles River
 - Source: https://www.ncei.noaa.gov/access/search/data-search/daily-summaries?pageSize=10&pageNum=10&dataTypes=TMIN&dataTypes=TMAX&dataTypes=PRCP&bbox=42.887,-73.499,41.238,-69.918&place=State%20or%20Province:38
   - saved in DS340H_Kang_Ashley/Original Datasets/ as below_weather.csv
