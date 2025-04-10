@@ -304,7 +304,7 @@ station$Long = as.numeric(station$Long)
 # ======================
 
 # only include the institution name (for debugging purpose), LAT, and LONG
-schooldata = read.csv("/Users/younakang/Downloads/hd2023.csv", header = TRUE)
+schooldata = read.csv("/Users/younakang/Downloads/institution.csv", header = TRUE)
 schooldata = schooldata %>% filter(STABBR=="MA")
 schooldata = schooldata %>% dplyr::select(INSTNM, CITY, LONGITUD, LATITUDE)
 
