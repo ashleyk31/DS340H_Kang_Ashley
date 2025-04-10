@@ -331,7 +331,7 @@ head(station)
 # Add in the mbta station information
 # ======================
 
-shapefile_data = st_read("~/Downloads/mbta_rapid_transit (1)/MBTA_NODE.shp")
+shapefile_data = st_read("~/Downloads/mbta_rapid_transit/MBTA_NODE.shp")
 
 # Convert the spatial data into a dataframe that contains the LAT and LONG values 
 # for each MBTA station
