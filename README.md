@@ -2,7 +2,7 @@
 This is a repository for the DS340H capstone project. 
 It contains the cleaned Bluebike 2020, 2021, 2022, 2023, and 2024 datasets, code for data cleaning, data analysis, and data visualization, and the final poster of the project. 
 
-## Folder: Data
+## Folder: Cleaned Data
 user.csv: merged Bluebike 2020, 2021, 2022, 2023, 2024 summer months dataset
 - Source: [https://bluebikes.com/system-data](https://s3.amazonaws.com/hubway-data/index.html)
 - 2020 summer months data
@@ -31,10 +31,11 @@ user.csv: merged Bluebike 2020, 2021, 2022, 2023, 2024 summer months dataset
   - 202408-bluebikes-tripdata.zip
   - 202409-bluebikes-tripdata.zip
  
-station.xlsx: Bluebike station data
-- Source: https://bluebikes.com/system-data
-  - saved in DS340H_Kang_Ashley/Original Datasets/ as station.xlsx
+station.csv: Bluebike station data
+- Source: https://bluebikes.com/system-data (original dataset saved in DS340H_Kang_Ashley/Original Datasets/ as station.xlsx
+  - saved in DS340H_Kang_Ashley/Cleaned Data/ as station.csv
 
+## Folder: Original Datasets
 institution.csv: dataset with institution information, including the name, latitude, and longitude values
 - Source: https://nces.ed.gov/ipeds/datacenter/DataFiles.aspx?year=2023&surveyNumber=1&sid=a60b5f75-667e-4b8f-8642-361210a33fdd&rtid=7
   - saved in DS340H_Kang_Ashley/Original Datasets/ as institution.csv
