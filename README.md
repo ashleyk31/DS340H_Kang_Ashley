@@ -32,7 +32,7 @@ user.csv: merged Bluebike 2020, 2021, 2022, 2023, 2024 summer months dataset
   - 202409-bluebikes-tripdata.zip
  
 station.csv: Bluebike station data
-- Source: https://bluebikes.com/system-data (original dataset saved in DS340H_Kang_Ashley/Original Datasets/ as station.xlsx
+- Source: https://bluebikes.com/system-data (original dataset saved in DS340H_Kang_Ashley/Original Datasets/ as station.xlsx)
   - saved in DS340H_Kang_Ashley/Cleaned Data/ as station.csv
 
 ## Folder: Original Datasets
