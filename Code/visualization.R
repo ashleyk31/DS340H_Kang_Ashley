@@ -12,7 +12,6 @@ library(ggplot2)
 # read in the datasets that I cleaned
 user = read.csv("/Users/younakang/Desktop/user.csv", header = TRUE)
 station = read.csv("/Users/younakang/Desktop/station.csv", header = TRUE)
-stationNofactor = read.csv("/Users/younakang/Desktop/STATION_FINAL.csv", header = TRUE)
 
 
 # ================================================================================
@@ -339,3 +338,54 @@ ggplot(heatmap_data, aes(x = start.municipality, y = end.municipality,
 
 # But for trips that were made in the non big municipalities, there are more trips that started
 # at one of those stations and end at a different station. 
+
+
+# ================================================================================
+# ====== PLOT 6 ======
+# ================================================================================
+
+# barplot by municipality that compares 5 main factors that are part of my final model
+municipality_docks = station %>%
+  group_by(Municipality) %>%
+  summarise(
+    # Count unique number of stations per municipality
+    total_stations = n_distinct(station.id),  
+    
+    total_docks = sum(total_docks, na.rm = TRUE)/4/total_stations, 
+    total_subscribers = sum(membership_total, na.rm = TRUE)/total_stations, 
+    total_trips = sum(total_trips, na.rm = TRUE)/total_stations, 
+    total_institutions_1km = sum(n_institutions_1km, na.rm = TRUE)/4/total_stations, 
+    total_mbta_1km = sum(n_mbta_1km, na.rm = TRUE)/4/total_stations
+  )
+
+municipality_docks_log = municipality_docks %>%
+  mutate(
+    total_docks = log(total_docks + 1),  
+    total_subscribers = log(total_subscribers + 1),
+    total_trips = log(total_trips + 1),
+    total_institutions_1km = log(total_institutions_1km + 1),
+    total_mbta_1km = log(total_mbta_1km + 1),
+    total_stations = log(total_stations + 1)
+  )
+
+# Reshape data
+municipality_long_log = municipality_docks_log %>%
+  pivot_longer(cols = c(total_docks, total_subscribers, total_trips, total_institutions_1km, total_mbta_1km, total_stations),
+               names_to = "Metric", 
+               values_to = "LogValue")
+
+# plot the barplot
+ggplot(municipality_long_log, aes(x = Municipality, y = LogValue, fill = Metric)) +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.8)) +  
+  geom_text(aes(label = ""),  
+            position = position_dodge(width = 0.8),
+            vjust = -0.5, 
+            size = 3) +
+  scale_fill_manual(values = c("#a1c7ff", "#7fb7f8", "#4fa8f7", 
+                               "#4f66e4", "#6a4cfc", "#b95eff")) + 
+  labs(title = "Log-Transformed Metrics by Municipality",
+       x = "Municipality",
+       y = "Log of Value",
+       fill = "Metric") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
