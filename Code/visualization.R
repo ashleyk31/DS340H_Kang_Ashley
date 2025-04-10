@@ -116,11 +116,11 @@ ggplot(line_graph_data_nonsub, aes(x = month, y = n, group = year, color = facto
 # time series with number of trips, average max temperature, average min temperature, 
 # average precipitation
 
-below = read.csv("~/Downloads/USC00193890.csv", header = TRUE) 
+below = read.csv("~/Downloads/below_weather.csv", header = TRUE) 
 #dataset for cities below the Charles River
 # Boston, Watertown, Brookline
 
-above = read.csv("~/Downloads/USC00194502.csv", header = TRUE) 
+above = read.csv("~/Downloads/above_weather.csv", header = TRUE) 
 # Salem, Arlington, Cambridge, Somerville, Revere, Malden, Everett, Chelsea, Medford, Newton
 
 # For the two weather datasets, add columns that I need, convert the weather to F
