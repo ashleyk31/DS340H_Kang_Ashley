@@ -4,7 +4,7 @@
 
 # ================================================================================
 # read in necessary libraries
-
+# 
 library(tidyverse)
 library(dplyr)
 library(readr)
@@ -51,7 +51,6 @@ vif(full_model)
 # compare with the full model. 
 
 # 1. Automatic Selection (AIC v BIC)
-attach(station_data)
 n = nrow(station_data)
 
 result.AIC = step(full_model, direction="both", k = 2)
@@ -60,13 +59,14 @@ result.BIC = step(full_model,direction="both",k=log(n))
 
 model.AIC = lm(total_trips ~ year + seasonal.status + Municipality + total_docks + 
                  n_institutions_1km + n_mbta_1km + Lat + Long + avg_precip + 
-                 membership_total)
-# 10 predictors
+                 membership_total, data = station_data)
+# 23 predictors
 
 
 model.BIC = lm(total_trips ~ seasonal.status + Municipality + total_docks + 
-                 n_institutions_1km + n_mbta_1km + Lat + Long + membership_total)
-# 8 predictors
+                 n_institutions_1km + n_mbta_1km + Lat + Long + membership_total,
+               data = station_data)
+# 21 predictors
 
 # ================================================================================
 # Cross Validation
@@ -76,7 +76,13 @@ set.seed(123)
 train_control = trainControl(method = "cv", number = 10)
 
 # Training
-# Model.AIC (10 predictors)
+# Full model (26 predictors)
+full_model_cv = train(total_trips ~., 
+                     data = station_data, 
+                     method = "lm", 
+                     trControl = train_control)
+
+# Model.AIC (23 predictors)
 model_AIC_cv = train(total_trips ~ year + seasonal.status + Municipality + 
                        total_docks + n_institutions_1km + n_mbta_1km + Lat + 
                        Long + avg_precip + membership_total, 
@@ -84,20 +90,25 @@ model_AIC_cv = train(total_trips ~ year + seasonal.status + Municipality +
                      method = "lm", 
                      trControl = train_control)
 
-# Model.BIC (8 predictors)
+# Model.BIC (21 predictors)
 model_BIC_cv = train(total_trips ~ seasonal.status + Municipality + 
                        total_docks + n_institutions_1km + n_mbta_1km + Lat + 
                        Long + membership_total, data = station_data, 
                      method = "lm",  
                      trControl = train_control)
 
+
+print(full_model_cv)
+# RMSE      Rsquared   MAE     
+# 18.79842  0.9647012  11.53904
+
 print(model_AIC_cv)
 # RMSE      Rsquared   MAE     
-# 18.79621  0.9647123  11.53878
+# 18.82897  0.9645491  11.54424
 
 print(model_BIC_cv)
 # RMSE      Rsquared   MAE     
-# 18.84385  0.9644902  11.52019
+# 18.83145  0.9644592  11.51533
 
 
 # The RMSE and Rsquared are similar to each other, and both have a high Rsqured, 
@@ -113,9 +124,9 @@ print(model_BIC_cv)
 # Visualize the distribution of the model chosen from above
 
 par(mfrow = c(1,2), cex = 0.5)
-
-plot(model.BIC, which = 1, pch = 16, cex = 0.7)  
-mtext("non transformed BIC model\n", side = 3, line = 1, cex = 0.7, font = 2)
+par(mfrow = c(1,1), cex = 0.5)
+plot(model.BIC, which = 1, pch = 16)  
+mtext("non transformed BIC model\n", side = 3, line = 1)
 plot(model.BIC, which = 2, pch = 16, cex = 0.7)  
 mtext("non transformed BIC model\n", side = 3, line = 1, cex = 0.7, font = 2)
 
@@ -129,12 +140,11 @@ boxcox_data = station_data
 
 boxcox_data$total_trips = boxcox_data$total_trips + 1
 
-shifted_model = lm(total_trips ~ seasonal.status + Municipality + 
-                     total_docks + n_institutions_1km + n_mbta_1km + Lat + 
-                     Long + membership_total, data = boxcox_data)
+shifted_model = lm(total_trips ~ seasonal.status + Municipality + total_docks + 
+                     n_institutions_1km + n_mbta_1km + Lat + Long + 
+                     membership_total, data = boxcox_data)
 
 boxcox_result = boxcox(shifted_model)
-
 
 best_lambda_shifted = boxcox_result$x[which.max(boxcox_result$y)]
 print(best_lambda_shifted)
@@ -172,11 +182,41 @@ mtext("boxcox transformed BIC model\n", side = 3, line = 1, cex = 0.7, font = 2)
 # The transformation did not improve the distribution, rather it made it worse. 
 # So I will keep the original non transformed BIC model. 
 
+# Check the CV score for the boxcox model
+model_BIC_boxcox_cv = train(total_trips_transformed ~ seasonal.status + Municipality + 
+                              total_docks + n_institutions_1km + n_mbta_1km + Lat + Long + 
+                              membership_total, data = boxcox_data, 
+                     method = "lm",  
+                     trControl = train_control)
+
+print(model_BIC_boxcox_cv)
+
 # And I will look the outlier separately to see if there is anything significant with the outlier.
+cooks_d = cooks.distance(model.BIC.boxcox)
+n = nrow(boxcox_data)
+p_reduced = length(coef(model.BIC.boxcox))
+which(cooks_d >= qf(0.05, df1 = p_reduced, df2 = n - p_reduced))
+
+# none of the outliers appear to be concerning
+
+model_BIC_boxcox_cv = train(total_trips ~ seasonal.status + Municipality + 
+                       total_docks + n_institutions_1km + n_mbta_1km + Lat + 
+                       Long + membership_total, data = station_data, 
+                     method = "lm",  
+                     trControl = train_control)
+
+print(model_BIC_boxcox_cv)
 
 # ================================================================================
+# Go back to the original non transformed BIC model.
 # Identify the outlier and check if it's a significant outlier
 
+cooks_d = cooks.distance(model.BIC)
+n = nrow(station_data)
+p_reduced = length(coef(model.BIC))
+which(cooks_d >= qf(0.05, df1 = p_reduced, df2 = n - p_reduced))
+
+# none seem to be concerning, but I will remove the ones that are labeled in the plot
 outlier_rows = c(2546, 2547)
 station_data_no_outlier = station_data[-outlier_rows, ]
 
@@ -186,40 +226,26 @@ model.BIC.removed = lm(total_trips ~ seasonal.status + Municipality +
 
 summary(model.BIC.removed)
 
+model_BIC_outlier_removed_cv = train(total_trips ~ seasonal.status + 
+                                       Municipality + total_docks + 
+                                       n_institutions_1km + n_mbta_1km + Lat + 
+                                       Long + membership_total, 
+                                     data = station_data_no_outlier, 
+                                     method = "lm",  
+                                     trControl = train_control)
+
+print(model_BIC_outlier_removed_cv)
+
 # ===============================
 # Plot the Model with Removed Outliers
 # ===============================
 par(mfrow = c(1,2), cex = 0.5)
 
 plot(model.BIC.removed, which = 1, pch = 16, cex = 0.7)  
-mtext("boxcox transformed BIC model\n", side = 3, line = 1, cex = 0.7, font = 2)
+mtext("BIC model with outliers removed\n", side = 3, line = 1, cex = 0.7, font = 2)
 plot(model.BIC.removed, which = 2, pch = 16, cex = 0.7)  
-mtext("boxcox transformed BIC model\n", side = 3, line = 1, cex = 0.7, font = 2)
+mtext("BIC model with outliers removed\n", side = 3, line = 1, cex = 0.7, font = 2)
 
-# ================================================================================
-# Model Comparison for Mallow's Cp (BIC Model (removed outliers) v. Full Model)
-
-RSS_full = sum(residuals(full_model)^2)
-RSS_reduced = sum(residuals(model.BIC.removed)^2)
-
-p_full = length(coef(full_model))
-p_reduced = length(coef(model.BIC.removed))
-n = nrow(station_data)
-
-# Compute Mallow's Cp
-Cp_full = sum(residuals(full_model)^2) / (nrow(station_data) - length(coef(full_model)))
-Cp_reduced = (RSS_reduced / Cp_full) + 2 * p_reduced - nrow(station_data)
-
-data.frame(Model = c("BIC model", "Full Model"),p = c(p_reduced-1, p_full-1), 
-           p_plus_1 =c(p_reduced, p_full),
-           Cp = c(Cp_reduced, Cp_full))
-
-#     Model                           p     p_plus_1    Cp
-# 1   BIC model (removed outliers)    21    22          -80.6809
-# 2   Full Model                      26    27          354.89183
-
-# From this table above, we can see that the BIC model's Mallow's Cp is closer to its p+1 value, 
-# which indicates that the BIC model has a better balance between complexity and fit.
 
 # ================================================================================
 # Final Model decision
